@@ -10,10 +10,11 @@ import SocketIo from 'socket.io';
 
 const pretty = new PrettyError();
 const app = express();
-
 const server = new http.Server(app);
-
 const io = new SocketIo(server);
+
+const reduxPlayData = [];
+
 io.path('/ws');
 
 app.use(session({
@@ -76,6 +77,14 @@ if (config.apiPort) {
           socket.emit('msg', msg);
         }
       }
+    });
+
+    socket.on('reduxPlayServer', () => {
+      socket.emit('reduxPlayClient', reduxPlayData);
+    });
+
+    socket.on('reduxPlayRecord', data => {
+      reduxPlayData.push(data);
     });
 
     socket.on('msg', (data) => {

@@ -12,13 +12,17 @@ import { Router, browserHistory } from 'react-router';
 import { syncHistoryWithStore } from 'react-router-redux';
 import { ReduxAsyncConnect } from 'redux-async-connect';
 import useScroll from 'scroll-behavior/lib/useStandardScroll';
+import TestRecorder from 'redux-test-recorder-react';
+
 
 import getRoutes from './routes';
 
 const client = new ApiClient();
 const _browserHistory = useScroll(() => browserHistory)();
 const dest = document.getElementById('content');
-const store = createStore(_browserHistory, client, window.__data);
+const st = createStore(_browserHistory, client, window.__data);
+const store = st.store;
+const recordProps = st.recordProps;
 const history = syncHistoryWithStore(_browserHistory, store);
 
 function initSocket() {
@@ -29,6 +33,20 @@ function initSocket() {
   });
   socket.on('msg', (data) => {
     console.log(data);
+  });
+  socket.on('reduxPlay', (data) => {
+    console.log(data);
+  });
+
+  socket.on('reduxPlayClient', data => {
+    data.forEach((state, i) => {
+      setTimeout(() => {
+        store.dispatch({
+          ...state.action,
+          reduxPlayAction: state
+        });
+      }, i * 75);
+    });
   });
 
   return socket;
@@ -46,7 +64,10 @@ const component = (
 
 ReactDOM.render(
   <Provider store={store} key="provider">
-    {component}
+    <div>
+      {component}
+      <TestRecorder {...recordProps} />
+    </div>
   </Provider>,
   dest
 );

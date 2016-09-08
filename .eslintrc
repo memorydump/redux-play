@@ -15,7 +15,10 @@
     "comma-dangle": 0,  // not sure why airbnb turned this on. gross!
     "indent": [2, 2, {"SwitchCase": 1}],
     "no-console": 0,
-    "no-alert": 0
+    "no-alert": 0,
+    "no-unused-vars": 0,
+    "spaced-comment": 0,
+    "id-length": 0
   },
   "plugins": [
     "react", "import"
@@ -33,6 +36,7 @@
     "__DISABLE_SSR__": true,
     "__DEVTOOLS__": true,
     "socket": true,
-    "webpackIsomorphicTools": true
+    "webpackIsomorphicTools": true,
+    "window: true"
   }
 }

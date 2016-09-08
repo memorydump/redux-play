@@ -1,12 +1,19 @@
 import { createStore as _createStore, applyMiddleware, compose } from 'redux';
 import createMiddleware from './middleware/clientMiddleware';
+import recorderMiddleware from './middleware/recorderMiddleware';
 import { routerMiddleware } from 'react-router-redux';
+import reduxRecord from 'redux-test-recorder';
+
+let record = {};
 
 export default function createStore(history, client, data) {
   // Sync dispatched route actions to the history
   const reduxRouterMiddleware = routerMiddleware(history);
 
-  const middleware = [createMiddleware(client), reduxRouterMiddleware];
+  const reducer = require('./modules/reducer');
+  record = reduxRecord({reducer});
+
+  const middleware = [createMiddleware(client), reduxRouterMiddleware, recorderMiddleware(reducer), record.middleware];
 
   let finalCreateStore;
   if (__DEVELOPMENT__ && __CLIENT__ && __DEVTOOLS__) {
@@ -21,7 +28,6 @@ export default function createStore(history, client, data) {
     finalCreateStore = applyMiddleware(...middleware)(_createStore);
   }
 
-  const reducer = require('./modules/reducer');
   const store = finalCreateStore(reducer, data);
 
 
@@ -31,5 +37,5 @@ export default function createStore(history, client, data) {
     });
   }
 
-  return store;
+  return { store, recordProps: record.props, reducer };
 }

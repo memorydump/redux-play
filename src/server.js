@@ -18,6 +18,7 @@ import { ReduxAsyncConnect, loadOnServer } from 'redux-async-connect';
 import createHistory from 'react-router/lib/createMemoryHistory';
 import {Provider} from 'react-redux';
 import getRoutes from './routes';
+import TestRecorder from 'redux-test-recorder-react';
 
 const targetUrl = 'http://' + config.apiHost + ':' + config.apiPort;
 const pretty = new PrettyError();
@@ -27,6 +28,7 @@ const proxy = httpProxy.createProxyServer({
   target: targetUrl,
   ws: true
 });
+
 
 app.use(compression());
 app.use(favicon(path.join(__dirname, '..', 'static', 'favicon.ico')));
@@ -68,7 +70,9 @@ app.use((req, res) => {
   }
   const client = new ApiClient(req);
   const memoryHistory = createHistory(req.originalUrl);
-  const store = createStore(memoryHistory, client);
+  const st = createStore(memoryHistory, client);
+  const store = st.store;
+  const recordProps = st.recordProps;
   const history = syncHistoryWithStore(memoryHistory, store);
 
   function hydrateOnClient() {
@@ -92,7 +96,10 @@ app.use((req, res) => {
       loadOnServer({...renderProps, store, helpers: {client}}).then(() => {
         const component = (
           <Provider store={store} key="provider">
-            <ReduxAsyncConnect {...renderProps} />
+            <div>
+              <ReduxAsyncConnect {...renderProps} />
+              <TestRecorder {...recordProps} />
+            </div>
           </Provider>
         );
 
